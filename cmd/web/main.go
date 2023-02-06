@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github/Atul-Ranjan12/booking/pkg/config"
-	"github/Atul-Ranjan12/booking/pkg/handlers"
-	"github/Atul-Ranjan12/booking/pkg/render"
+	"github/Atul-Ranjan12/booking/internal/config"
+	"github/Atul-Ranjan12/booking/internal/handlers"
+	"github/Atul-Ranjan12/booking/internal/render"
 	"log"
 	"net/http"
 	"time"
@@ -27,7 +27,7 @@ func main() {
 	session.Cookie.SameSite = http.SameSiteLaxMode
 	session.Cookie.Secure = app.InProduction
 
-	app.Session = session 
+	app.Session = session
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {

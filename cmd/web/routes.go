@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github/Atul-Ranjan12/booking/pkg/config"
-	"github/Atul-Ranjan12/booking/pkg/handlers"
+	"github/Atul-Ranjan12/booking/internal/config"
+	"github/Atul-Ranjan12/booking/internal/handlers"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -18,6 +18,15 @@ func routes (app *config.AppConfig) http.Handler {
 
 	mux.Get("/", handlers.Repo.Home)
 	mux.Get("/about", handlers.Repo.About)
+	mux.Get("/generals-quaters", handlers.Repo.Generals)
+	mux.Get("/majors-suite", handlers.Repo.Majors)
+
+	mux.Get("/search-availability", handlers.Repo.Availibility)
+	mux.Post("/search-availability", handlers.Repo.PostAvailibility)
+	mux.Post("/search-availability-json", handlers.Repo.AvailabilityJSON)
+
+	mux.Get("/contact", handlers.Repo.Contact)
+	mux.Get("/make-reservation", handlers.Repo.Reservation)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
