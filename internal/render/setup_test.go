@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"github/Atul-Ranjan12/booking/internal/config"
 	"github/Atul-Ranjan12/booking/internal/models"
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -21,6 +22,12 @@ func TestMain(m *testing.M) {
 
 	testApp.InProduction = false
 
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	testApp.InfoLog = infoLog
+
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	testApp.ErrorLog = errorLog
+
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 	session.Cookie.Persist = true
@@ -30,6 +37,7 @@ func TestMain(m *testing.M) {
 	testApp.Session = session
 
 	app = &testApp
+
 
 	os.Exit(m.Run())
 }
@@ -47,5 +55,5 @@ func (ww *myTestWriter) Write(b []byte) (int , error){
 }
 
 func (ww *myTestWriter) WriteHeader(statusCode int){
-	
+
 }
