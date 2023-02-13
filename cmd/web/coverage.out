@@ -1,0 +1,12 @@
+mode: set
+github/Atul-Ranjan12/booking/cmd/web/main.go:22.13,25.16 2 0
+github/Atul-Ranjan12/booking/cmd/web/main.go:29.2,37.24 4 0
+github/Atul-Ranjan12/booking/cmd/web/main.go:25.16,27.3 1 0
+github/Atul-Ranjan12/booking/cmd/web/main.go:41.18,57.16 10 1
+github/Atul-Ranjan12/booking/cmd/web/main.go:61.2,69.12 6 1
+github/Atul-Ranjan12/booking/cmd/web/main.go:57.16,59.3 1 0
+github/Atul-Ranjan12/booking/cmd/web/middleware.go:10.53,11.70 1 0
+github/Atul-Ranjan12/booking/cmd/web/middleware.go:11.70,14.3 2 0
+github/Atul-Ranjan12/booking/cmd/web/middleware.go:17.45,28.2 3 1
+github/Atul-Ranjan12/booking/cmd/web/middleware.go:30.50,32.2 1 1
+github/Atul-Ranjan12/booking/cmd/web/routes.go:12.50,38.2 18 1

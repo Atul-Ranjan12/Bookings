@@ -1,0 +1,19 @@
+document.getElementById("clickButton").addEventListener("click", () => {
+        let html = `
+        <form id="check-availability" action = "" method = "post" novalidate class = "needs-validation">
+          <div class = :form-row">
+            <div class =  "col">
+              <div class = "form-row" id =  "reservation-dates-modal">
+                <div class = "col">
+                  <input disabled required class = "form-control" type="date" name="start" id="start" placeholder="Arrival">
+                </div>
+                <div class = "col">
+                  <input disabled required class = "form-control" type="date" name="end" id="end" placeholder="Departure">
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        `;
+        attention.custom({ title: "Enter your dates here!", msg: html });
+      });

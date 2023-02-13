@@ -34,20 +34,21 @@
 
   <div class="row">
     <div class="col text-center">
-      <a id="check-availability-button" href="#" class="btn btn-success"
+      <a id="check-availability-button" href="#!" class="btn btn-success"
         >Check Availability</a
       >
     </div>
   </div>
 </div>
-
 {{ end }}
 
-{{ define "js"}}
+{{define "js"}}
 <script>
+  console.log("The javascript from inside here works");
   document
     .getElementById("check-availability-button")
-    .addEventListener("click", () => {
+    .addEventListener("click", function () {
+      console.log("This works finally");
       let html = `
         <form id="check-availability" action = "" method = "post" novalidate class = "needs-validation">
           <div class = :form-row">

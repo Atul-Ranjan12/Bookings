@@ -83,6 +83,10 @@
           <li class="nav-item">
             <a class="nav-link" href="/contact">Contact</a>
           </li>
+
+          </li>
+          <li class="nav-item">
+          </li>
         </ul>
       </div>
     </nav>
@@ -90,6 +94,7 @@
     {{block "content" .}}
 
     {{ end }}
+
 
     <div class="row my-footer">
       <div class="col">Left</div>
@@ -130,9 +135,10 @@
     <!-- for SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.1/dist/sweetalert2.all.min.js"></script>
 
+
     {{block "js" .}}
 
-    {{ end }}
+    {{end}}
 
     <script>
       let attention = Prompt();
@@ -167,6 +173,7 @@
         });
       }
 
+
       function notifyModal(title, text, icon, button) {
         Swal.fire({
           title: title,
@@ -175,6 +182,18 @@
           button: button,
         });
       }
+
+      {{with .Error}}
+        notify("{{.}}", "error");
+      {{end}}
+
+      {{with .Flash}}
+        notify("{{.}}", "success")
+      {{end}}
+
+      {{with .Warning}}
+        notify("{{.}}", "warning")
+      {{end}}
 
       function Prompt() {
         let toast = (c) => {

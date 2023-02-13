@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"github/Atul-Ranjan12/booking/internal/config"
 	"github/Atul-Ranjan12/booking/internal/handlers"
+	"github/Atul-Ranjan12/booking/internal/models"
 	"github/Atul-Ranjan12/booking/internal/render"
 	"log"
 	"net/http"
@@ -19,6 +21,28 @@ var session *scs.SessionManager
 // main is the main function
 func main() {
 
+	err := run();
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Starting server on local host ");
+
+	server := &http.Server {
+		Addr: portNumber,
+		Handler: routes(&app),
+	}
+
+	serverError := server.ListenAndServe()
+	log.Fatal(serverError)
+}
+
+// Funciton to run the main application
+func run() error {
+
+	// Primitive types for the Session
+	gob.Register(models.Reservation{})
+
 	app.InProduction = false
 
 	session = scs.New()
@@ -32,6 +56,7 @@ func main() {
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("cannot create template cache")
+		return err
 	}
 
 	app.TemplateCache = tc
@@ -41,13 +66,6 @@ func main() {
 	handlers.NewHandlers(repo)
 
 	render.NewTemplates(&app)
-
-	server := &http.Server {
-		Addr: portNumber,
-		Handler: routes(&app),
-	}
-
-	fmt.Println("Starting server on local host ");
-	serverError := server.ListenAndServe()
-	log.Fatal(serverError)
+	
+	return nil
 }
