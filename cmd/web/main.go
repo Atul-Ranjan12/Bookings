@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github/Atul-Ranjan12/booking/internal/config"
+	"github/Atul-Ranjan12/booking/internal/driver"
 	"github/Atul-Ranjan12/booking/internal/handlers"
 	"github/Atul-Ranjan12/booking/internal/helpers"
 	"github/Atul-Ranjan12/booking/internal/models"
@@ -17,25 +18,31 @@ import (
 )
 
 const portNumber = ":4000"
+
 var app config.AppConfig
 var session *scs.SessionManager
 
-// Initializing the logs 
+// Initializing the logs
 var infoLog *log.Logger
 var errorLog *log.Logger
 
 // main is the main function
 func main() {
 
-	err := run();
+	db, err := run()
+	if err != nil {
+		log.Fatal("AN unexpected error happened while connecting to the databse, quitting... with ", err)
+	}
+	defer db.SQL.Close()
+
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Starting server on local host ");
+	fmt.Println("Starting server on local host ")
 
-	server := &http.Server {
-		Addr: portNumber,
+	server := &http.Server{
+		Addr:    portNumber,
 		Handler: routes(&app),
 	}
 
@@ -44,10 +51,13 @@ func main() {
 }
 
 // Funciton to run the main application
-func run() error {
+func run() (*driver.DB, error) {
 
 	// Primitive types for the Session
 	gob.Register(models.Reservation{})
+	gob.Register(models.User{})
+	gob.Register(models.Room{})
+	gob.Register(models.Restriction{})
 
 	app.InProduction = false
 
@@ -65,20 +75,28 @@ func run() error {
 
 	app.Session = session
 
+	// connect to database
+	log.Println("Connecting to database")
+	db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=atulranjan password=")
+	if err != nil {
+		log.Fatal("Cannot connect to the database, dyring..")
+	}
+	log.Println("Connected to the database")
+
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("cannot create template cache")
-		return err
+		return nil, err
 	}
 
 	app.TemplateCache = tc
-	app.UseCache = false
+	app.UseCache = true
 
-	repo := handlers.NewRepo(&app)
+	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
 
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 	helpers.NewHelper(&app)
-	
-	return nil
+
+	return db, nil
 }

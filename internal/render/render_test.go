@@ -6,15 +6,14 @@ import (
 	"testing"
 )
 
-
-func TestAddDefaultData(t *testing.T){
+func TestAddDefaultData(t *testing.T) {
 	var td models.TemplateData
 
 	r, err := getSession()
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	session.Put(r.Context(), "flash", "123")
 
 	result := AddDefaultData(&td, r)
@@ -39,12 +38,12 @@ func TestRenderTemplate(t *testing.T) {
 
 	var ww myTestWriter
 
-	err = RenderTemplate(&ww, r, "home.page.tmpl", &models.TemplateData{})
+	err = Template(&ww, r, "home.page.tmpl", &models.TemplateData{})
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = RenderTemplate(&ww, r, "non-existant.page.tmpl", &models.TemplateData{})
+	err = Template(&ww, r, "non-existant.page.tmpl", &models.TemplateData{})
 	if err == nil {
 		t.Error("Rendered template that it was not supposedd to")
 	}
@@ -63,11 +62,11 @@ func getSession() (*http.Request, error) {
 	return r, nil
 }
 
-func TestNewTemplates(t *testing.T){
-	NewTemplates(app)
+func TestNewTemplates(t *testing.T) {
+	NewRenderer(app)
 }
 
-func TestCreateTemplateCache(t *testing.T){
+func TestCreateTemplateCache(t *testing.T) {
 	pathToTemplates = "./../../templates"
 	_, err := CreateTemplateCache()
 	if err != nil {

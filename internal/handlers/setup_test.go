@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github/Atul-Ranjan12/booking/internal/config"
+	"github/Atul-Ranjan12/booking/internal/driver"
 	"github/Atul-Ranjan12/booking/internal/models"
 	"github/Atul-Ranjan12/booking/internal/render"
 	"log"
@@ -45,6 +46,13 @@ func getRoutes() http.Handler {
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.ErrorLog = errorLog
 
+	// connect to database
+	log.Println("Connecting to database")
+	db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=atulranjan password=")
+	if err != nil {
+		log.Fatal("Cannot connect to the database, dyring..")
+	}
+
 	tc, err := CreateTestTemplateCache()
 	if err != nil {
 		log.Fatal("cannot create template cache")
@@ -53,10 +61,10 @@ func getRoutes() http.Handler {
 	app.TemplateCache = tc
 	app.UseCache = true
 
-	repo := NewRepo(&app)
+	repo := NewRepo(&app, db)
 	NewHandlers(repo)
 
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 
 	mux := chi.NewRouter()
 
@@ -82,17 +90,16 @@ func getRoutes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
-	return mux;
+	return mux
 }
-
 
 func NoSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
 
 	csrfHandler.SetBaseCookie(http.Cookie{
 		HttpOnly: true,
-		Path: "/",
-		Secure: app.InProduction,
+		Path:     "/",
+		Secure:   app.InProduction,
 		SameSite: http.SameSiteLaxMode,
 	})
 
