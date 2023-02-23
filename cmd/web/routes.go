@@ -28,6 +28,9 @@ func routes(app *config.AppConfig) http.Handler {
 	// Route when the link is clicked
 	mux.Get("/choose-room/{id}", handlers.Repo.ChooseRoom)
 
+	// Route to book now page
+	mux.Get("/book-room", handlers.Repo.BookNow)
+
 	mux.Get("/contact", handlers.Repo.Contact)
 
 	mux.Get("/make-reservation", handlers.Repo.Reservation)

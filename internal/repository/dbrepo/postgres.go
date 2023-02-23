@@ -84,16 +84,19 @@ func (m *PostgresDBRepo) SearchAvailabilityByDatesByRoomID(start, end time.Time,
 		FROM 
 			room_restrictions
 		WHERE
-			room_id = $1
-			$2 < end_date and $3 > start_date;
+			room_id = $1 and
+			$2 < end_date and $3 > start_date
 	`
 	var numRows int
 
 	row := m.DB.QueryRowContext(ctx, query, roomID, start, end)
-	if err := row.Scan(&numRows); err != nil {
-		log.Println("Error while querying for reservations")
+	err := row.Scan(&numRows)
+	if err != nil {
+		log.Println("ERROR: Error while quering for reservation")
 		return false, err
 	}
+
+	log.Println("Value of numRows is: ", numRows)
 
 	if numRows == 0 {
 		return true, nil
@@ -148,4 +151,26 @@ func (m *PostgresDBRepo) SearchAvailibilityForAllRooms(start, end time.Time) ([]
 	}
 
 	return rooms, err
+}
+
+// Get Room information from the room ID
+func (m *PostgresDBRepo) GetRoomByID(id int) (models.Room, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `
+		SELECT id, room_name, created_at, updated_at
+		FROM rooms
+		WHERE id = $1
+	`
+	var room models.Room
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+	if err := row.Scan(&room.ID, &room.RoomName, &room.CreatedAt, &room.UpdatedAt); err != nil {
+		log.Println("Error scanning the room details")
+		return room, err
+	}
+
+	return room, nil
 }

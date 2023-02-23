@@ -44,55 +44,6 @@
 
 {{define "js"}}
 <script>
-  console.log("The javascript from inside here works");
-  document
-    .getElementById("check-availability-button")
-    .addEventListener("click", function () {
-      console.log("This works finally");
-      let html = `
-        <form id="check-availability" action = "" method = "post" novalidate class = "needs-validation">
-          <div class = :form-row">
-            <div class =  "col">
-              <div class = "form-row" id =  "reservation-dates-modal">
-                <div class = "col">
-                  <input disabled required class = "form-control" type="date" name="start" id="start" placeholder="Arrival">
-                </div>
-                <div class = "col">
-                  <input disabled required class = "form-control" type="date" name="end" id="end" placeholder="Departure">
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-        `;
-      attention.custom({
-        title: "Enter your dates here!",
-        msg: html,
-
-        didOpen: () => {
-          document.getElementById("start").removeAttribute("disabled");
-          document.getElementById("end").removeAttribute("disabled");
-        },
-
-        callback: function (result) {
-          console.log("called");
-
-          let form = document.getElementById("check-availability");
-          let formData = new FormData(form);
-          formData.append("csrf_token", "{{.CSRFToken}}");
-
-          fetch("/search-availability-json", {
-            method: "post",
-            body: formData,
-          })
-            .then((response) => response.json())
-            .then((data) => {
-              console.log(data);
-              console.log(data.ok);
-              console.log(data.message);
-            });
-        },
-      });
-    });
+  ShowDatesBox("1");
 </script>
 {{ end }}
