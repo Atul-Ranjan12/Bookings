@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github/Atul-Ranjan12/booking/internal/models"
 	"log"
 	"text/template"
 
@@ -8,10 +9,11 @@ import (
 )
 
 type AppConfig struct {
-	UseCache bool
+	UseCache      bool
 	TemplateCache map[string]*template.Template
-	InfoLog *log.Logger
-	ErrorLog *log.Logger
-	InProduction bool
-	Session *scs.SessionManager
+	InfoLog       *log.Logger
+	ErrorLog      *log.Logger
+	InProduction  bool
+	Session       *scs.SessionManager
+	MailChan      chan models.MailData
 }

@@ -34,6 +34,8 @@ func main() {
 		log.Fatal("AN unexpected error happened while connecting to the databse, quitting... with ", err)
 	}
 	defer db.SQL.Close()
+	// CLosing the Mailing channel
+	defer close(app.MailChan)
 
 	if err != nil {
 		log.Fatal(err)
@@ -58,6 +60,10 @@ func run() (*driver.DB, error) {
 	gob.Register(models.User{})
 	gob.Register(models.Room{})
 	gob.Register(models.Restriction{})
+
+	// Make a mailing channel
+	mailChan := make(chan models.MailData)
+	app.MailChan = mailChan
 
 	app.InProduction = false
 
