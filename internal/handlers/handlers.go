@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github/Atul-Ranjan12/booking/internal/config"
 	"github/Atul-Ranjan12/booking/internal/driver"
 	"github/Atul-Ranjan12/booking/internal/forms"
@@ -167,6 +168,38 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
+	// Send Email confirmation
+	// Build body of the message
+	mailMessage := fmt.Sprintf(`
+		<strong>Reservation Confirmation</strong> <br>
+		Dear %s:, 
+		This is to confirm your reservation from %s to %s.
+	`, reservation.FirstName, reservation.StartDate.Format("2006-01-02"), reservation.EndDate.Format("2006-01-02"))
+
+	msg := models.MailData{
+		To:      reservation.Email,
+		From:    "me@here.com",
+		Subject: "Reservation Confirmation",
+		Content: mailMessage,
+	}
+
+	m.App.MailChan <- msg
+
+	// Send notificaiton to property owner
+	mailMessage = fmt.Sprintf(`
+		<strong>Reservation Notifications</strong> <br>
+		Dear %s:, 
+		This is to confirm your reservation from %s to %s.
+	`, reservation.FirstName, reservation.StartDate.Format("2006-01-02"), reservation.EndDate.Format("2006-01-02"))
+
+	msg = models.MailData{
+		To:      "me@here.com",
+		From:    "me@here.com",
+		Subject: "Reservation Confirmation",
+		Content: mailMessage,
+	}
+
+	m.App.MailChan <- msg
 
 	// Put the reservation back in the context
 	m.App.Session.Put(r.Context(), "reservation", reservation)
@@ -380,4 +413,61 @@ func (m *Repository) BookNow(w http.ResponseWriter, r *http.Request) {
 
 	m.App.Session.Put(r.Context(), "reservation", res)
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
+}
+
+// Handler for the login page
+func (m *Repository) ShowLogin(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+}
+
+// Handler to handle the post operation of the login page
+func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
+	// Prevents session attack
+	_ = m.App.Session.RenewToken(r.Context())
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	form := forms.New(r.PostForm)
+	form.Required("email", "password")
+	form.IsEmailValid("email")
+
+	if !form.Valid() {
+		log.Println("Reached Here")
+		render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		return
+	}
+
+	id, _, err := m.DB.Authenticate(email, password)
+	if err != nil {
+		log.Println(err)
+		log.Println("Reached here where email and password is supposed to be wrong")
+
+		m.App.Session.Put(r.Context(), "error", "Invalid Login Credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	m.App.Session.Put(r.Context(), "user_id", id)
+	m.App.Session.Put(r.Context(), "flash", "Logged in Succesfully")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (m *Repository) Logout(w http.ResponseWriter, r *http.Request) {
+	log.Println("Appropriate handler was definately called")
+	_ = m.App.Session.Destroy(r.Context())
+	m.App.Session.RenewToken(r.Context())
+	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+}
+
+func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	render.Template(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{})
 }

@@ -281,6 +281,4 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 		t.Error("Failed to Unmarshal JSON")
 	}
 
-	log.Println(j.OK, j.StartDate, j.EndDate, j.Message)
-
 }

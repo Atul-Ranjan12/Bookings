@@ -34,8 +34,19 @@ func main() {
 		log.Fatal("AN unexpected error happened while connecting to the databse, quitting... with ", err)
 	}
 	defer db.SQL.Close()
-	// CLosing the Mailing channel
+	// Closing the Mailing channel
 	defer close(app.MailChan)
+	fmt.Println("Starting Mail Channel..")
+	listenForMail()
+
+	// msg := models.MailData{
+	// 	To:      "john@do.ca",
+	// 	From:    "me@here.com",
+	// 	Subject: "Some subject",
+	// 	Content: "",
+	// }
+
+	// app.MailChan <- msg
 
 	if err != nil {
 		log.Fatal(err)
