@@ -473,8 +473,20 @@ func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request) {
-	log.Println("All Reservations was called")
-	render.Template(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{})
+	// Get list of all reservations from the database
+	reservations, err := m.DB.AllReservations()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	log.Println("Reservations are: ", len(reservations))
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+
+	log.Println("Succesfully passed the data into the template")
+	render.Template(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }
 
 func (m *Repository) AdminReservationCalender(w http.ResponseWriter, r *http.Request) {
