@@ -26,16 +26,26 @@
     <!-- endinject -->
     <link rel="shortcut icon" href="/static/admin/images/favicon.png" />
 
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://unpkg.com/notie/dist/notie.min.css"
+    />
+
     <style>
       .content-wrapper {
         background: white;
       }
+      label {
+        font-weight: bold;
+      }
+      .notie-container {
+        z-index: 50000;
+      }
     </style>
     {{block "css" . }}
 
-    {{
-      end
-    }}
+    {{end}}
   </head>
   <body>
     <div class="container-scroller">
@@ -148,9 +158,74 @@
     <script src="/static/admin/js/dashboard.js"></script>
     <!-- End custom js for this page-->
 
+    <script src="/static/js/app.js"></script>
+    <script src="https://unpkg.com/notie"></script>
+
+    <!-- For Notie  -->
+    <script src="https://unpkg.com/notie"></script>
+
+    <!-- for SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.1/dist/sweetalert2.all.min.js"></script>
+    <script src="/static/js/app.js"></script>
+
     {{block "js" . }}
 
     {{ end }}
+    <script>
+      let attention = Prompt();
+
+      (function () {
+        "use strict";
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll("needs-validation");
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+          form.addEventListener(
+            "submit",
+            function (event) {
+              if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+              }
+
+              form.classList.add("was-validated");
+            },
+            false
+          );
+        });
+      })();
+
+      function notify(msg, alertType) {
+        notie.alert({
+          type: alertType,
+          text: msg,
+        });
+      }
+
+
+      function notifyModal(title, text, icon, button) {
+        Swal.fire({
+          title: title,
+          text: text,
+          icon: icon,
+          button: button,
+        });
+      }
+
+      {{with .Error}}
+        notify("{{.}}", "error");
+      {{end}}
+
+      {{with .Flash}}
+        notify("{{.}}", "success")
+      {{end}}
+
+      {{with .Warning}}
+        notify("{{.}}", "warning")
+      {{end}}
+    </script>
   </body>
 </html>
 

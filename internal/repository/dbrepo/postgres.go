@@ -24,8 +24,8 @@ func (m *PostgresDBRepo) InsertReservation(res models.Reservation) (int, error) 
 	var newID int
 
 	stmt := `INSERT INTO reservations (first_name, last_name, email, phone, start_date, 
-		end_date, room_id, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`
+		end_date, room_id, created_at, updated_at, processed)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 0) RETURNING id`
 
 	err := m.DB.QueryRowContext(ctx,
 		stmt,
@@ -256,18 +256,29 @@ func (m *PostgresDBRepo) Authenticate(email, testPassword string) (int, string, 
 }
 
 // Returns a slice of Reservations from the database
-func (m *PostgresDBRepo) AllReservations() ([]models.Reservation, error) {
+func (m *PostgresDBRepo) AllReservations(showNew bool) ([]models.Reservation, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	var reservations []models.Reservation
+	var query string
 
-	query := `
-		SELECT r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date, r.end_date, r.room_id, r.created_at, r.updated_at, rm.id, rm.room_name
+	if showNew {
+		query = `
+		SELECT r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date, r.end_date, r.room_id, r.created_at, r.updated_at, rm.id, rm.room_name, r.processed
+		FROM reservations r
+		LEFT JOIN rooms rm ON (r.room_id =  rm.id)
+		WHERE r.processed = 0
+		ORDER BY r.start_date asc
+	`
+	} else {
+		query = `
+		SELECT r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date, r.end_date, r.room_id, r.created_at, r.updated_at, rm.id, rm.room_name, r.processed
 		FROM reservations r
 		LEFT JOIN rooms rm ON (r.room_id =  rm.id)
 		ORDER BY r.start_date asc
 	`
+	}
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -291,6 +302,7 @@ func (m *PostgresDBRepo) AllReservations() ([]models.Reservation, error) {
 			&i.UpdatedAt,
 			&i.Room.ID,
 			&i.Room.RoomName,
+			&i.Processed,
 		)
 		if err != nil {
 			log.Println("error scanning the rows into variables")
@@ -304,4 +316,99 @@ func (m *PostgresDBRepo) AllReservations() ([]models.Reservation, error) {
 	}
 
 	return reservations, nil
+}
+
+// Get one Reservatinn from the database
+func (m *PostgresDBRepo) GetReservationByID(id int) (models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var res models.Reservation
+
+	query := `
+		SELECT r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date, r.end_date, r.room_id, r.created_at, r.updated_at, r.processed, rm.id, rm.room_name
+		FROM reservations r 
+		LEFT JOIN rooms rm ON (r.room_id = rm.id)
+		WHERE r.id = $1
+	`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+	err := row.Scan(
+		&res.ID,
+		&res.FirstName,
+		&res.LastName,
+		&res.Email,
+		&res.Phone,
+		&res.StartDate,
+		&res.EndDate,
+		&res.RoomID,
+		&res.CreatedAt,
+		&res.UpdatedAt,
+		&res.Processed,
+		&res.Room.ID,
+		&res.Room.RoomName,
+	)
+
+	if err != nil {
+		log.Println("Counld not find the row in the databse")
+		return res, err
+	}
+
+	return res, nil
+}
+
+// Updates a reservation in the database
+func (m *PostgresDBRepo) UpdateReservation(u models.Reservation) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `
+		UPDATE reservations
+		SET first_name = $1, last_name = $2, email = $3, phone=$4, updated_at=$5
+		WHERE id = $6
+	`
+
+	_, err := m.DB.ExecContext(ctx, query,
+		u.FirstName,
+		u.LastName,
+		u.Email,
+		u.Phone,
+		time.Now(),
+		u.ID,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *PostgresDBRepo) DeleteReservation(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `DELETE FROM reservations WHERE id=$1`
+
+	_, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Updates Processed for Resrvation by ID
+func (m *PostgresDBRepo) UpdateProcessedReservation(id, processed int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `
+		UPDATE reservations
+		SET processed = $1
+		WHERE id = $2
+	`
+
+	_, err := m.DB.ExecContext(ctx, query, processed, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

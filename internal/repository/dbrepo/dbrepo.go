@@ -30,8 +30,27 @@ func NewTestingRepo(a *config.AppConfig) repository.DatabaseRepo {
 	}
 }
 
-func (m *testDBRepo) AllReservations() ([]models.Reservation, error) {
+func (m *testDBRepo) AllReservations(showNew bool) ([]models.Reservation, error) {
 	var reservations []models.Reservation
 
 	return reservations, nil
+}
+
+func (m *testDBRepo) GetReservationByID(id int) (models.Reservation, error) {
+	var res models.Reservation
+
+	return res, nil
+}
+
+func (m *testDBRepo) UpdateReservation(u models.Reservation) error {
+	return nil
+}
+
+func (m *testDBRepo) DeleteReservation(id int) error {
+	return nil
+}
+
+// Updates Processed for Resrvation by ID
+func (m *testDBRepo) UpdateProcessedReservation(id, processed int) error {
+	return nil
 }
